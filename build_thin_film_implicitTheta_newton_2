@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#List here all the f90 files to compile, separated by spaces
+#THERE MUST NOT be spaces around '=' in bash
+myprogramfiles="kinds.f90 command_line.f90 lapack_precision.f90 lapack_interfaces.f90 thin_film_implicitTheta_newton_2.f90"
+
+#Name of compiled file
+outfile="exec_implicit"
+
+# Name of compiler
+fc=gfortran
+
+#Actual compile line. Other flags etc can be added
+$fc -g $myprogramfiles -o $outfile -llapack #-O3
