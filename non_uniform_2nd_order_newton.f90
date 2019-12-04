@@ -3,11 +3,15 @@ MODULE non_uniform_newton
   USE lapack_precision
   USE lapack_interfaces
   USE kinds
+  USE generate_grid
 
   IMPLICIT NONE
 
   CONTAINS
 
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!! Preparation for non uniform newton !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   FUNCTION S1(x,dx)
   REAL(KIND=dbl), INTENT(IN) :: x
   REAL(KIND=dbl), DIMENSION(6), INTENT(IN) :: dx
@@ -176,9 +180,11 @@ MODULE non_uniform_newton
       f(i) = b(i,1)*(h(i-1)**3/3.0_dbl/Ca*(a(i-1,1)*h(i-4)+a(i-1,2)*h(i-3)+a(i-1,3)*h(i-2) &
             +a(i-1,4)*h(i)+a(i-1,5)*h(i+1)+a(i-1,6)*h(i+2))+A_bar/h(i-1)*(b(i-1,1)*h(i-2) &
             +b(i-1,3)*h(i))+A_bar*b(i-1,2)) &
+                                            &
             +b(i,2)*(h(i)**3/3.0_dbl/Ca*(a(i,1)*h(i-3)+a(i,2)*h(i-2)+a(i,3)*h(i-1) &
             +a(i,4)*h(i+1)+a(i,5)*h(i+2)+a(i+1,6)*h(i+3))+A_bar/h(i)*(b(i,1)*h(i-1) &
             +b(i,3)*h(i+1)) + A_bar*b(i,2)) &
+                                            &
             +b(i,3)*(h(i+1)**3/3.0_dbl/Ca*(a(i+1,1)*h(i-2)+a(i+1,2)*h(i-1)+a(i+1,3)*h(i) &
             +a(i+1,4)*h(i+2)+a(i+1,5)*h(i+3)+a(i+1,6)*h(i+4))+A_bar/h(i+1)*(b(i+1,1)*h(i) &
             +b(i+1,3)*h(i+2)) + A_bar*b(i+1,2))
@@ -190,7 +196,7 @@ MODULE non_uniform_newton
     REAL(KIND=dbl), DIMENSION(2*n+9), INTENT(IN) :: h
     REAL(KIND=dbl), DIMENSION(2*n+9,6), INTENT(IN) :: a
     REAL(KIND=dbl), DIMENSION(2*n+9,3), INTENT(IN) :: b
-    REAL(KIND=dbl), INTENT(IN) :: theta, dt, A_bar, Ca
+    REAL(KIND=dbl), INTENT(IN) :: theta, dt, A_bar, C a
     REAL(KIND=dbl), DIMENSION(2*n+9) :: f,K
     INTEGER :: i
 
@@ -225,47 +231,63 @@ MODULE non_uniform_newton
     ff(2*n+9) = h_2(2*n+9) - h_2(9)
   END FUNCTION evaluate_f
 
-  FUNCTION non_uniform_2nd_order_newton() RESULT()
+!!!!!!!!!!!!!!!!!!! Explicit Euler for initial guess !!!!!!!!!!!!!!!!!!!!!!!!!
+  FUNCTION explicit_euler(n,h_1,a,b,A_bar,Ca,dt) RESULT(h_2)
+  INTEGER, INTENT(IN) :: n
+  REAL(KIND=dbl), DIMENSION(2*n+9), INTENT(IN) :: h_1
+  REAL(KIND=dbl), DIMENSION(2*n+9,6), INTENT(IN) :: a
+  REAL(KIND=dbl), DIMENSION(2*n+9,3), INTENT(IN) :: b
+  REAL(KIND=dbl), INTENT(IN) :: A_bar, Ca, dt
+  REAL(KIND=dbl), DIMENSION(2*n+9), INTENT(IN) :: f,h_2
+  INTEGER :: i
 
+  f = rhs_f(n,h_1,a,b,A_bar,Ca) 
+  DO i=5,2*n+5
+    h_2(i) = h_1(i) - f(i)*dt
+  END DO
+  h_2(1) = h_2(2*n+1); h_2(2) = h_2(2*n+2); h_2(3) = h_2(2*n+3); h_2(4) = h_2(2*n+4)
+  h_2(2*n+6) = h_2(6); h_2(2*n+7) = h_2(7); h_2(2*n+8) = h_2(8); h_2(2*n+9) = h_2(9)
+  END FUNCTION explicit_euler
+
+  FUNCTION non_uniform_2nd_order_newton(n,h_1,dx,theta,dt,A_bar,Ca,tol) RESULT(h_2)
+    INTEGER, INTENT(IN) :: n
+    REAL(KIND=dbl), DIMENSION(2*n+9), INTENT(IN) :: h_1
+    REAL(KIND=dbl), DIMENSION(2*n+8), INTENT(IN) :: dx
+    REAL(KIND=dbl), DIMENSION(2*n+9,6) :: a
+    REAL(KIND=dbl), DIMENSION(2*n+9,3) :: b
+    REAL(KIND=dbl), DIMENSION(2*n+9) :: h_2, f
+    REAL(KIND=dbl), INTENT(IN) :: A_bar, Ca, dt, tol 
+    REAL(KIND=dbl) :: e
+    INTEGER, DIMENSION(2*n+9) :: ipiv
+    REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: work(:)
+    INTEGER :: info, lwork
+    REAL(KIND=dbl), DIMENSION(2*n+9,2*n+9) :: Jac, J_inv, LU
+
+    a = coef_a(dx)
+    b = coef_b(dx)  
+    h_2 = explicit_euler(n,h_1,a,b,A_bar,Ca,dt)
+    e = 1.0_dbl
+    DO WHILE (e>tol)
+      Jac = Jacobian(n,h_2,a,b,theta,dt,A_bar,Ca) 
+
+      info = 0
+      lwork = -1
+      ALLOCATE(work(lwork))
+      work = 0
+      ipiv = 0
+
+      LU = Jac
+      CALL degtrf(2*n+9,2*n+9,LU,2*n+9,ipiv,info)
+      J_inv = LU
+      CALL dgetri(2*n+9,J_inv,n+4,ipiv,work,lwork,info)
+      DEALLOCATE(work)
+      f = evaluate_f(n,h_1,h_2,a,b,theta,dt,A_bar,Ca)
+      h_2 = h_2 - matmul(J_inv,f)
+      f = evaluate_f(n,h_1,h_2,a,b,theta,dt,A_bar,Ca)
+      e = norm2(f)
+    END DO
   END FUNCTION non_uniform_2nd_order_newton
 END MODULE non_uniform_newton
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

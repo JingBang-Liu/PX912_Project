@@ -26,7 +26,7 @@ MODULE generate_grid
     END DO
   END SUBROUTINE grid_uni
 
-  SUBROUTINE grid_square(n,lower_bnd,upper_bnd)
+  SUBROUTINE grid_square(x,n,lower_bnd,upper_bnd)
     INTEGER, INTENT(IN) :: n
     REAL(KIND=dbl), DIMENSION(2*n+9), ALLOCATABLE, INTENT(INOUT) :: x
     REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: dx
