@@ -51,7 +51,7 @@ MODULE non_uniform_newton
 
   FUNCTION coef_a(dx) RESULT(a)
   REAL(KIND=dbl), DIMENSION(:), INTENT(IN) :: dx
-  REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: dxdx
+  REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: dxdx1
   REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: a
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: g1
   INTEGER :: i,j,n
@@ -59,31 +59,31 @@ MODULE non_uniform_newton
   n = size(dx) + 1
   ALLOCATE(a(n,6))
   ALLOCATE(g1(n))
-  ALLOCATE(dxdx(n,6))
+  ALLOCATE(dxdx1(n,6))
   a = 0.0_dbl
   g1 = 0.0_dbl
-  dxdx = 0.0_dbl
+  dxdx1 = 0.0_dbl
   DO i=4,n-3
-    dxdx(i,1) = dx(i-3) + dx(i-2) + dx(i-1)
-    dxdx(i,2) = dx(i-2) + dx(i-1)
-    dxdx(i,3) = dx(i-1)
-    dxdx(i,4) = dx(i+1)
-    dxdx(i,5) = dx(i+1) + dx(i+2)
-    dxdx(i,6) = dx(i+1) + dx(i+2) + dx(i+3)
+    dxdx1(i,1) = dx(i-3) + dx(i-2) + dx(i-1)
+    dxdx1(i,2) = dx(i-2) + dx(i-1)
+    dxdx1(i,3) = dx(i-1)
+    dxdx1(i,4) = dx(i+1)
+    dxdx1(i,5) = dx(i+1) + dx(i+2)
+    dxdx1(i,6) = dx(i+1) + dx(i+2) + dx(i+3)
   END DO
   DO i=4,n-3
-    g1(i) = (dxdx(i,5)-dxdx(i,6))*(dxdx(i,6)-dxdx(i,2))*(dxdx(i,4)-dxdx(i,6)+dxdx(i,2)) &
-          -dxdx(i,1)*(dxdx(i,1)+dxdx(i,4))*(dxdx(i,1)+dxdx(i,5)-dxdx(i,6)-dxdx(i,2)) &
-          +dxdx(i,3)*(dxdx(i,1)*dxdx(i,1)-dxdx(i,1)*(dxdx(i,6)-dxdx(i,5)+dxdx(i,2))&
-          +(dxdx(i,6)+dxdx(i,2))*(dxdx(i,6)-dxdx(i,5))+(dxdx(i,4)*(dxdx(i,5)-dxdx(i,6)&
-          -dxdx(i,2)+dxdx(i,1))))
+    g1(i) = (dxdx1(i,5)-dxdx1(i,6))*(dxdx1(i,6)-dxdx1(i,2))*(dxdx1(i,4)-dxdx1(i,6)+dxdx1(i,2)) &
+          -dxdx1(i,1)*(dxdx1(i,1)+dxdx1(i,4))*(dxdx1(i,1)+dxdx1(i,5)-dxdx1(i,6)-dxdx1(i,2)) &
+          +dxdx1(i,3)*(dxdx1(i,1)*dxdx1(i,1)-dxdx1(i,1)*(dxdx1(i,6)-dxdx1(i,5)+dxdx1(i,2))&
+          +(dxdx1(i,6)+dxdx1(i,2))*(dxdx1(i,6)-dxdx1(i,5))+(dxdx1(i,4)*(dxdx1(i,5)-dxdx1(i,6)&
+          -dxdx1(i,2)+dxdx1(i,1))))
   END DO
   DO i=4,n-3
-    a(i,1) = (-dxdx(i,3)+dxdx(i,4)+dxdx(i,5)-dxdx(i,2))/(dxdx(i,1)+dxdx(i,6))/g1(i)
-    a(i,2) = S3(dxdx(i,5),dxdx(i,:))/S4(dxdx(i,5),dxdx(i,:))/g1(i)
-    a(i,3) = S1(dxdx(i,4),dxdx(i,:))/S2(dxdx(i,3),dxdx(i,:))/g1(i)
-    a(i,4) = -S1(-dxdx(i,3),dxdx(i,:))/S2(-dxdx(i,4),dxdx(i,:))/g1(i)
-    a(i,5) = -S3(-dxdx(i,2),dxdx(i,:))/S4(-dxdx(i,2),dxdx(i,:))/g1(i)
+    a(i,1) = (-dxdx1(i,3)+dxdx1(i,4)+dxdx1(i,5)-dxdx1(i,2))/(dxdx1(i,1)+dxdx1(i,6))/g1(i)
+    a(i,2) = S3(dxdx1(i,5),dxdx1(i,:))/S4(dxdx1(i,5),dxdx1(i,:))/g1(i)
+    a(i,3) = S1(dxdx1(i,4),dxdx1(i,:))/S2(dxdx1(i,3),dxdx1(i,:))/g1(i)
+    a(i,4) = -S1(-dxdx1(i,3),dxdx1(i,:))/S2(-dxdx1(i,4),dxdx1(i,:))/g1(i)
+    a(i,5) = -S3(-dxdx1(i,2),dxdx1(i,:))/S4(-dxdx1(i,2),dxdx1(i,:))/g1(i)
     a(i,6) = -a(i,1)
   END DO
   END FUNCTION coef_a 
@@ -180,11 +180,9 @@ MODULE non_uniform_newton
       f(i) = b(i,1)*(h(i-1)**3/3.0_dbl/Ca*(a(i-1,1)*h(i-4)+a(i-1,2)*h(i-3)+a(i-1,3)*h(i-2) &
             +a(i-1,4)*h(i)+a(i-1,5)*h(i+1)+a(i-1,6)*h(i+2))+A_bar/h(i-1)*(b(i-1,1)*h(i-2) &
             +b(i-1,3)*h(i))+A_bar*b(i-1,2)) &
-                                            &
             +b(i,2)*(h(i)**3/3.0_dbl/Ca*(a(i,1)*h(i-3)+a(i,2)*h(i-2)+a(i,3)*h(i-1) &
             +a(i,4)*h(i+1)+a(i,5)*h(i+2)+a(i+1,6)*h(i+3))+A_bar/h(i)*(b(i,1)*h(i-1) &
             +b(i,3)*h(i+1)) + A_bar*b(i,2)) &
-                                            &
             +b(i,3)*(h(i+1)**3/3.0_dbl/Ca*(a(i+1,1)*h(i-2)+a(i+1,2)*h(i-1)+a(i+1,3)*h(i) &
             +a(i+1,4)*h(i+2)+a(i+1,5)*h(i+3)+a(i+1,6)*h(i+4))+A_bar/h(i+1)*(b(i+1,1)*h(i) &
             +b(i+1,3)*h(i+2)) + A_bar*b(i+1,2))
@@ -196,7 +194,7 @@ MODULE non_uniform_newton
     REAL(KIND=dbl), DIMENSION(2*n+9), INTENT(IN) :: h
     REAL(KIND=dbl), DIMENSION(2*n+9,6), INTENT(IN) :: a
     REAL(KIND=dbl), DIMENSION(2*n+9,3), INTENT(IN) :: b
-    REAL(KIND=dbl), INTENT(IN) :: theta, dt, A_bar, C a
+    REAL(KIND=dbl), INTENT(IN) :: theta, dt, A_bar, Ca
     REAL(KIND=dbl), DIMENSION(2*n+9) :: f,K
     INTEGER :: i
 
@@ -238,7 +236,7 @@ MODULE non_uniform_newton
   REAL(KIND=dbl), DIMENSION(2*n+9,6), INTENT(IN) :: a
   REAL(KIND=dbl), DIMENSION(2*n+9,3), INTENT(IN) :: b
   REAL(KIND=dbl), INTENT(IN) :: A_bar, Ca, dt
-  REAL(KIND=dbl), DIMENSION(2*n+9), INTENT(IN) :: f,h_2
+  REAL(KIND=dbl), DIMENSION(2*n+9) :: f,h_2
   INTEGER :: i
 
   f = rhs_f(n,h_1,a,b,A_bar,Ca) 
@@ -256,7 +254,7 @@ MODULE non_uniform_newton
     REAL(KIND=dbl), DIMENSION(2*n+9,6) :: a
     REAL(KIND=dbl), DIMENSION(2*n+9,3) :: b
     REAL(KIND=dbl), DIMENSION(2*n+9) :: h_2, f
-    REAL(KIND=dbl), INTENT(IN) :: A_bar, Ca, dt, tol 
+    REAL(KIND=dbl), INTENT(IN) :: A_bar, Ca, dt, tol, theta 
     REAL(KIND=dbl) :: e
     INTEGER, DIMENSION(2*n+9) :: ipiv
     REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: work(:)
@@ -277,7 +275,7 @@ MODULE non_uniform_newton
       ipiv = 0
 
       LU = Jac
-      CALL degtrf(2*n+9,2*n+9,LU,2*n+9,ipiv,info)
+      CALL dgetrf(2*n+9,2*n+9,LU,2*n+9,ipiv,info)
       J_inv = LU
       CALL dgetri(2*n+9,J_inv,n+4,ipiv,work,lwork,info)
       DEALLOCATE(work)

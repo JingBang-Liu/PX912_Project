@@ -2,7 +2,7 @@
 
 #List here all the f90 files to compile, separated by spaces
 #THERE MUST NOT be spaces around '=' in bash
-myprogramfiles="kinds.f90 lapack_precision.f90 lapack_interfaces.f90 non_uniform_2nd_order_newton.f90"
+myprogramfiles="kinds.f90 command_line.f90 lapack_precision.f90 lapack_interfaces.f90 grid.f90 non_uniform_2nd_order_newton.f90 body_solver.f90"
 
 #Name of compiled file
 outfile="exec_non_uni"
@@ -11,4 +11,4 @@ outfile="exec_non_uni"
 fc=gfortran
 
 #Actual compile line. Other flags etc can be added
-$fc -g $myprogramfiles -o $outfile #-O3
+$fc -g $myprogramfiles -o $outfile -llapack #-O3
