@@ -12,3 +12,5 @@ fc=gfortran
 
 #Actual compile line. Other flags etc can be added
 $fc -g $myprogramfiles -o $outfile -llapack #-O3
+
+./exec_non_uni n=50 dt=0.000001_dbl theta=0.5_dbl

@@ -17,7 +17,6 @@ MODULE generate_grid
     ALLOCATE(dx(1))
     dx = (upper_bnd-lower_bnd)/(real(2*n))
 
-    ALLOCATE(x(2*n+1))
     DO i=5,2*n+5
       x(i) = lower_bnd + dx(1) * (real(i-4)-1.0_dbl)
     END DO

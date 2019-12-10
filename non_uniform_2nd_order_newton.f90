@@ -18,7 +18,7 @@ MODULE non_uniform_newton
   REAL(KIND=dbl) :: S1
 
   S1 = dx(5)*(dx(5)-dx(2))*(dx(6)+dx(2)-dx(1))+x*x*(dx(6)-dx(5)+dx(2)-dx(1)) &
-      -(dx(6)-dx(1))*(dx(6)*dx(6)-dx(2)*dx(2)+dx(1)*dx(1)) + x*(dx(5)-dx(2)) &
+      -(dx(6)-dx(1))*(dx(6)*dx(6)-dx(2)*dx(2)+dx(1)*dx(1)) - x*(dx(5)-dx(2)) &
       *(dx(5)-dx(6)-dx(2)+dx(1))
   END FUNCTION S1
 
@@ -67,23 +67,22 @@ MODULE non_uniform_newton
     dxdx1(i,1) = dx(i-3) + dx(i-2) + dx(i-1)
     dxdx1(i,2) = dx(i-2) + dx(i-1)
     dxdx1(i,3) = dx(i-1)
-    dxdx1(i,4) = dx(i+1)
-    dxdx1(i,5) = dx(i+1) + dx(i+2)
-    dxdx1(i,6) = dx(i+1) + dx(i+2) + dx(i+3)
+    dxdx1(i,4) = dx(i)
+    dxdx1(i,5) = dx(i) + dx(i+1)
+    dxdx1(i,6) = dx(i) + dx(i+1) + dx(i+2)
   END DO
   DO i=4,n-3
-    g1(i) = (dxdx1(i,5)-dxdx1(i,6))*(dxdx1(i,6)-dxdx1(i,2))*(dxdx1(i,4)-dxdx1(i,6)+dxdx1(i,2)) &
-          -dxdx1(i,1)*(dxdx1(i,1)+dxdx1(i,4))*(dxdx1(i,1)+dxdx1(i,5)-dxdx1(i,6)-dxdx1(i,2)) &
-          +dxdx1(i,3)*(dxdx1(i,1)*dxdx1(i,1)-dxdx1(i,1)*(dxdx1(i,6)-dxdx1(i,5)+dxdx1(i,2))&
-          +(dxdx1(i,6)+dxdx1(i,2))*(dxdx1(i,6)-dxdx1(i,5))+(dxdx1(i,4)*(dxdx1(i,5)-dxdx1(i,6)&
-          -dxdx1(i,2)+dxdx1(i,1))))
+    g1(i) = (dxdx1(i,5)-dxdx1(i,6))*(dxdx1(i,6)+dxdx1(i,2))*(dxdx1(i,4)-dxdx1(i,6)+dxdx1(i,1)-dxdx1(i,3)) &
+           +dxdx1(i,1)*(dxdx1(i,4)-dxdx1(i,3))*(-dxdx1(i,5)+dxdx1(i,6)+dxdx1(i,2))-dxdx1(i,1)**3 &
+           +(-dxdx1(i,4)-dxdx1(i,5)+dxdx1(i,6)+dxdx1(i,2)+dxdx1(i,1))*dxdx1(i,1)*dxdx1(i,1) &
+           +dxdx1(i,3)*dxdx1(i,4)*(dxdx1(i,5)-dxdx1(i,6)-dxdx1(i,2)+dxdx1(i,1)) 
   END DO
   DO i=4,n-3
     a(i,1) = (-dxdx1(i,3)+dxdx1(i,4)+dxdx1(i,5)-dxdx1(i,2))/(dxdx1(i,1)+dxdx1(i,6))/g1(i)
-    a(i,2) = S3(dxdx1(i,5),dxdx1(i,:))/S4(dxdx1(i,5),dxdx1(i,:))/g1(i)
+    a(i,2) = S3(dxdx1(i,5),dxdx1(i,:))/S4(dxdx1(i,2),dxdx1(i,:))/g1(i)
     a(i,3) = S1(dxdx1(i,4),dxdx1(i,:))/S2(dxdx1(i,3),dxdx1(i,:))/g1(i)
     a(i,4) = -S1(-dxdx1(i,3),dxdx1(i,:))/S2(-dxdx1(i,4),dxdx1(i,:))/g1(i)
-    a(i,5) = -S3(-dxdx1(i,2),dxdx1(i,:))/S4(-dxdx1(i,2),dxdx1(i,:))/g1(i)
+    a(i,5) = -S3(-dxdx1(i,2),dxdx1(i,:))/S4(-dxdx1(i,5),dxdx1(i,:))/g1(i)
     a(i,6) = -a(i,1)
   END DO
   END FUNCTION coef_a 
@@ -91,32 +90,28 @@ MODULE non_uniform_newton
   FUNCTION coef_b(dx) RESULT(b)
   REAL(KIND=dbl), DIMENSION(:), INTENT(IN) :: dx
   REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: dxdx
-  REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE ::b
+  REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: b
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: g2
   INTEGER :: i,j,n
 
   n = size(dx) + 1
   ALLOCATE(b(n,3))
   ALLOCATE(g2(n))
-  ALLOCATE(dxdx(n,3))
+  ALLOCATE(dxdx(n,2))
   b = 0.0_dbl
   g2 = 0.0_dbl
   dxdx = 0.0_dbl
   DO i=4,n-3
-    dxdx(i,1) = dx(i-3) + dx(i-2) + dx(i-1)
-    dxdx(i,2) = dx(i-2) + dx(i-1)
-    dxdx(i,3) = dx(i-1)
-    dxdx(i,4) = dx(i+1)
-    dxdx(i,5) = dx(i+1) + dx(i+2)
-    dxdx(i,6) = dx(i+1) + dx(i+2) + dx(i+3)
+    dxdx(i,1) = dx(i-1)
+    dxdx(i,2) = dx(i)
   END DO
   DO i=4,n-3
-    g2(i) = dxdx(i,3)*dxdx(i,3)*dxdx(i,3) + dxdx(i,4)*dxdx(i,4)*dxdx(i,4)
+    g2(i) = dxdx(i,1)*dxdx(i,2)*(dxdx(i,1)+dxdx(i,2))
   END DO
   DO i=4,n-3
-    b(i,1) = -dxdx(i,3)*dxdx(i,3)/g2(i)
-    b(i,2) = (dxdx(i,3)*dxdx(i,3) - dxdx(i,4)*dxdx(i,4))/g2(i)
-    b(i,3) = dxdx(i,4)*dxdx(i,4) 
+    b(i,1) = -dxdx(i,2)**2/g2(i)
+    b(i,2) = (dxdx(i,2)**2-dxdx(i,1)**2)/g2(i)
+    b(i,3) = dxdx(i,1)**2/g2(i) 
   END DO
   END FUNCTION coef_b
 
@@ -277,7 +272,7 @@ MODULE non_uniform_newton
       LU = Jac
       CALL dgetrf(2*n+9,2*n+9,LU,2*n+9,ipiv,info)
       J_inv = LU
-      CALL dgetri(2*n+9,J_inv,n+4,ipiv,work,lwork,info)
+      CALL dgetri(2*n+9,J_inv,2*n+9,ipiv,work,lwork,info)
       DEALLOCATE(work)
       f = evaluate_f(n,h_1,h_2,a,b,theta,dt,A_bar,Ca)
       h_2 = h_2 - matmul(J_inv,f)
