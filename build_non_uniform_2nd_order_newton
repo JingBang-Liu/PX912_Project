@@ -2,7 +2,7 @@
 
 #List here all the f90 files to compile, separated by spaces
 #THERE MUST NOT be spaces around '=' in bash
-myprogramfiles="kinds.f90 command_line.f90 lapack_precision.f90 lapack_interfaces.f90 grid.f90 non_uniform_2nd_order_newton.f90 body_solver.f90"
+myprogramfiles="kinds.f90 command_line.f90 lapack_precision.f90 lapack_interfaces.f90 write_netcdf.f90 grid.f90 Fornberg.f90 uniform_2nd_order_newton.f90 non_uniform_2nd_order_newton.f90 body_solver.f90"
 
 #Name of compiled file
 outfile="exec_non_uni"
@@ -10,7 +10,11 @@ outfile="exec_non_uni"
 # Name of compiler
 fc=gfortran
 
-#Actual compile line. Other flags etc can be added
-$fc -g $myprogramfiles -o $outfile -llapack #-O3
+# Use nf-config to grab the compile and link flags. Backticks run command and grab output
+fflags=`nf-config --fflags`
+flibs=`nf-config --flibs`
 
-./exec_non_uni n=50 dt=0.000001_dbl theta=0.5_dbl
+#Actual compile line. Other flags etc can be added
+$fc -g -fcheck=all -Wall $fflags $myprogramfiles $flibs -o $outfile -llapack #-O3
+
+./exec_non_uni #n=400 dt=0.000001_dbl theta=0.5_dbl
