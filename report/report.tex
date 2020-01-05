@@ -1,5 +1,5 @@
 \documentclass[]{article}
-
+\usepackage{amsmath}
 %opening
 \title{PX912 Fluid Mechanics Part Report}
 \author{JingBang Liu}
@@ -8,18 +8,88 @@
 
 \maketitle
 
-\section{The non-uniform solver}
+\section{Introduction}
 
-\subsection{Non-uniform Grid Generator}
+The rupture of thin liquid films is often observed when the film thickness is in the range of several hundreds of Angstrms. cite{} However in the classical fluid mechanics theory surface tension have the tendency of stabilizing the thin film thus prevent it from rupturing. The absence of theoretical explanation of this phenomenon attracted much attention until Ruckenstein and Jain added an extra body force term into the Navier-Stokes equations. The body force represents van der Waals interactions that breaks the stable state of a film when it is thin.
 
-Here we only show the non-uniform grid generator in $1D$ case.
+The new system is a partial differential equation with highly non-linear terms which means it is very unlikely to have a analytical solution. So the choice of numerical schemes is important when approaching this problem. Oron et al cite{} showed in their paper that the rupture occurs rather rapidly in a small interval. So to accurately present the rupture one need to use small grid size and small time step. Wang et al cite{} showed in their paper that it is advisable to solve the equation numerically on a non-uniform grid for efficiency.
 
-Suppose the thin film starts at point $x_{start}$ and ends at point $x_{end}$. Assume that initial shape of the thin film is symmetric about the centre. Then we know that the shape of the thin film should always be symmetric and the model predicted rupture point should be also positioned at the centre. So it is reasonable that the non-uniform grid is also symmetric about the centre with a high grid density around the centre.
+In this project we will show the derivation of the new thin film function with van der Waals force term from 2D Navier-Stokes equations. Then we will try to reproduce the result from previous literatures by solving the thin film equation with van der Waals force numerically and explore the influence of uniform and non-uniform grid. 
 
-With the above in mind, we generate the grid with following formula.
+\section{Derivation of the New Thin Film Equation}
+
+Suppose we are considering the $2$ dimensional problem and the density $\rho$ of the fluid is constant. Then the Navier-Stokes equations can be written as
+\begin{equation}
+	\rho \big( \frac{\partial u}{\partial t}+ u\frac{\partial u}{\partial x} +w\frac{\partial u}{\partial z} \big),
+\end{equation}
+together with the continuity equation
+\begin{equation}
+	\frac{\partial u}{\partial x} + \frac{\partial w}{\partial z} = 0,
+\end{equation}
+where $u$ and $w$ are velocities of flow in the $x$ direction and $z$ direction. $\phi$ is the potential of van der Waals forces with the form cite{}
+\begin{equation}
+	\phi = Ah^{-3},
+\end{equation}
+where $h$ is the thickness of the film and $A$ is some constant\footnote{We have omitted some details in this derivation. For what $A$ represents and other details one can read cite{}}.
+
 
 \begin{align}
-	y_i &= 
+	\tilde{x} = Lx, \tilde{z} = \epsilon Lz, \tilde{u} = Uu, \tilde{v} = \epsilon Vv, \tilde{p} = Pp, \tilde{h} = \epsilon Lh.
 \end{align}
+Apply nondimensionalization above to equations (ref) to get
+\begin{align}
+	\rho \frac{U^2}{L}\big( \frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x} + w\frac{\partial u}{\partial w} \big) &= -\frac{P}{L}\frac{\partial p}{\partial x} + \mu
+\end{align}
+
+Here we let $\frac{P}{L} = \frac{\mu U}{\epsilon^2 L^2}$ to ensure that the pressure term $\frac{P}{L}\frac{\partial p}{\partial x}$ is comparable with the viscous term $\frac{\mu U}{\epsilon^2 L^2}\frac{\partial^2 u}{\partial z^2}$ to preserve the Poiseuille flow cite{}. We would also like $\frac{P}{L} = \frac{A}{\epsilon^3 L^4}$ Remember that the Reynolds number is $Re=\frac{\rho U L}{\mu}$ and the Stokes number is $St=\frac{\rho g L^2}{\mu U}$ cite{}. Rearrange equations () we get
+\begin{align}
+	\label{nondim_4}
+	\epsilon^2 Re\big( \frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x} + w\frac{\partial u}{\partial z} \big) &= -\frac{\partial p}{\partial x} + \epsilon^2 \frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial z^2} - \frac{\partial \phi}{\partial x}, \\
+	\label{nondim_5}
+	\epsilon^4 Re\big( \frac{\partial w}{\partial t} + u\frac{\partial w}{\partial x} + w\frac{\partial w}{\partial z} \big) &= -\frac{\partial p}{\partial z} + \epsilon^4 \frac{\partial^2 w}{\partial x^2} + \epsilon^2\frac{\partial^2 w}{\partial z^2} - \frac{\partial \phi}{\partial z} - \epsilon^3 St, \\
+	\label{nondim_6}
+	\frac{\partial u}{\partial x} + \frac{\partial w}{\partial z} &= 0.
+\end{align}
+Let $\epsilon\to 0$ and suppose $\epsilon^2 Re \to 0$ $\epsilon^3 St \to 0$, then
+\begin{align}
+	\label{nondim_7}
+	\frac{\partial^2 u}{\partial z^2} - \frac{\partial}{\partial x}(p + \phi) &= 0, \\
+	\label{nondim_8}
+	\frac{\partial}{\partial z}(p + \phi) &= 0, \\
+	\label{nondim_9}
+	\frac{\partial u}{\partial x} + \frac{\partial w}{\partial z} &= 0.
+\end{align}
+Apply nondimensionalization to the boundary conditions (ref) we get
+\begin{align}
+	\label{nonbc_1}
+	\frac{\partial h}{\partial t} + u\frac{\partial h}{\partial x} &= w,\quad &\text{at}\quad z=h(x,t), \\
+	\label{nonbc_2}
+	\frac{\partial u}{\partial z} &= 0,&\text{at}\quad z=h(x,t), \\
+	\label{nonbc_3}
+	p - p_{atm} &= -\frac{1}{\bar{Ca}}\frac{\partial^2 h}{\partial x^2}, &\text{at}\quad z=h(x,t), \\
+	\label{nonbc_4}
+	u = w &= 0, & \text{at}\quad z=0,
+\end{align}
+where $\bar{Ca} = \frac{\mu U}{\epsilon^3 \sigma}$ is the new Capillary number. Integrate equation (\ref{nondim_9}) with respect to $z$ from $0$ to $h(x,t)$ and apply Leibniz's rule we get
+\begin{equation}
+	0 = \frac{\partial }{\partial x}\big( \int_0^{h(x,t)} u dz \big) - u \frac{\partial h}{\partial x}\rvert_{z=0}^{z=h(x,t)} + w\rvert_{z=0}^{z=h(x,t)}.
+\end{equation}
+Apply boundary conditions (\ref{nonbc_1}) (\ref{nonbc_4}) and suppose $\bar{u} = \frac{1}{h}\int_0^{h} u dz$ we get
+\begin{equation}
+	0 = \frac{\partial}{\partial x}(h\bar{u}) + \frac{\partial h}{\partial t}.
+\end{equation}
+Equation (\ref{nondim_8}) suggests that $(p+\phi)$ is only a function of $x$ and $t$, thus we can integrate equation (\ref{nondim_7}) with respect to $z$ twice to get
+\begin{equation}
+	\label{int1}
+	u = \frac{z^2}{2}\frac{\partial}{\partial x}(p + \phi) + A(x,t)z + B(x,t),
+\end{equation}
+where $A(x,t)$ and $B(x,t)$ are some functions to be determined. Apply boundary conditions (\ref{nonbc_2})(\ref{nonbc_4}) to equation (\ref{int1}) we get
+\begin{equation}
+	\label{int2}
+	u = \big( \frac{1}{2}z^2 - hz \big)\big( \frac{\partial p}{\partial x} + \frac{\partial \phi}{\partial x} \big).
+\end{equation}
+Differentiate equation (\ref{nonbc_3}) with respect to 
+
+
 
 \end{document}

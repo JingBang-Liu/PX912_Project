@@ -14,18 +14,22 @@ PROGRAM MAIN
   !LOGICAL :: success, exists
   
   CHARACTER(LEN=20) :: GRID
+  CHARACTER(LEN=20) :: SHAPE
   REAL(KIND=dbl), PARAMETER :: pi = 3.14159265359_dbl
   REAL(KIND=dbl), PARAMETER :: w = sqrt(0.5_dbl)
   INTEGER :: test = 0 
   INTEGER :: n ! input from command line
   INTEGER(KIND=INT64) :: m = 1e10
   REAL(KIND=dbl) :: dt ! input from command line
-  REAL(KIND=dbl), PARAMETER :: lower_bnd = 0.0_dbl, upper_bnd = 2.0_dbl*pi
+  !REAL(KIND=dbl), PARAMETER :: lower_bnd = 0.0_dbl, upper_bnd = 2.0_dbl*pi
+  !REAL(KIND=dbl), PARAMETER :: lower_bnd = -pi/W, upper_bnd = pi/W
+  REAL(KIND=dbl) :: lower_bnd, upper_bnd
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: x ! grid depend on n
   REAL(KIND=dbl) :: dx ! dx depend on x
+  REAL(KIND=dbl) :: amp ! amplitude for pertubation
   REAL(KIND=dbl), PARAMETER :: Ca = 1.0_dbl, A_bar = 1.0_dbl
   REAL(KIND=dbl) :: theta ! input from command line
-  REAL(KIND=dbl), PARAMETER :: tol_newton = 5e-2_dbl
+  REAL(KIND=dbl), PARAMETER :: tol_newton = 1e-2_dbl
   REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: h
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: h0
   REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: a, b
@@ -50,11 +54,23 @@ PROGRAM MAIN
   ! Try to grab theta, the implicit factor
   !success = get_arg("theta",theta,exists=exists)
   
-  GRID = "non_uniform_square"
-  n = 6400
+  SHAPE = "1999"
+  amp = 0.8
+  GRID = "uniform"
+  n = 400
   theta = 0.5_dbl
   PRINT*, theta
   PRINT*, dt
+
+  IF (SHAPE=="1999") THEN
+    lower_bnd = 0.0_dbl
+    upper_bnd = 2.0_dbl*pi
+  ELSE IF (SHAPE=="1997") THEN
+    lower_bnd = -pi/W
+    upper_bnd = pi/W 
+  END IF
+
+
 
   r_d%run_data_n = n
   r_d%run_data_dt = dt
@@ -75,7 +91,11 @@ PROGRAM MAIN
     h = 0.0_dbl
     ! initial condition
     DO i=1,2*n+9
-      h(1,i) = 1.0_dbl + 0.8_dbl * cos(x(i))
+      IF (SHAPE=="1999") THEN
+        h(1,i) = 1.0_dbl + amp * cos(x(i))
+      ELSE IF (SHAPE=="1997") THEN
+        h(1,i) = 1.0_dbl - amp * cos(W*x(i))
+      END IF
     END DO
 
     h0 = h(1,:)
@@ -128,7 +148,7 @@ PROGRAM MAIN
 
 !!!!!!!!!!!!!!!!!!!!!!!!! for non_uniform_square gird !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   IF (GRID == "non_uniform_square") THEN
-    dt = 2e-12
+    dt = 2e-9
     ALLOCATE(x(2*n+9))
     CALL grid_square(n,x,lower_bnd,upper_bnd)
 
@@ -138,7 +158,11 @@ PROGRAM MAIN
     h = 0.0_dbl
     ! initial condition
     DO i=1,2*n+9
-      h(1,i) = 1.0_dbl + 0.5_dbl * cos(x(i))
+      IF (SHAPE=="1999") THEN
+        h(1,i) = 1.0_dbl + amp * cos(x(i))
+      ELSE IF (SHAPE=="1997") THEN
+        h(1,i) = 1.0_dbl - amp * cos(W*x(i))
+      END IF
     END DO
 
     h0 = h(1,:)
@@ -205,7 +229,11 @@ PROGRAM MAIN
     h = 0.0_dbl
     ! initial condition
     DO i=1,2*n+9
-      h(1,i) = 1.0_dbl + 0.2_dbl * cos(x(i))
+      IF (SHAPE=="1999") THEN
+        h(1,i) = 1.0_dbl + amp * cos(x(i))
+      ELSE IF (SHAPE=="1997") THEN
+        h(1,i) = 1.0_dbl - amp * cos(W*x(i))
+      END IF
     END DO
 
     h0 = h(1,:)

@@ -262,6 +262,7 @@ MODULE non_uniform_newton
       IF (e_temp<e) THEN
         PRINT*, e
       END IF
+      !PRINT*, e
       e_temp = e
     END DO
   END FUNCTION non_uniform_2nd_order_newton
