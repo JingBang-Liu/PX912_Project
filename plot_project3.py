@@ -18,10 +18,13 @@ time = dat.variables['time']
 
 fig, (ax0,ax1) = plt.subplots(1,2)
 
-c = ax0.loglog(time,h_min)
+c = ax0.loglog(time[-1]-time,h_min)
+c = ax0.loglog(time[-1]-time,time[-1]-time)
+c = ax0.loglog(time[-1]-time,(time[-1]-time)**(1/5))
 ax0.set_title('Logarithmic plot of time and h_min')
 ax0.set_xlabel('time')
 ax0.set_ylabel('h_min')
+ax0.legend(['h_min','1','1/5'])
 c = ax1.plot(x,h0,'r')
 c = ax1.plot(x,h,'b')
 ax1.set_title('shape of film')

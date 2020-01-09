@@ -69,7 +69,7 @@ MODULE generate_grid
       y(i) = dy*(real(i-1))
     END DO
     DO i=1,n+1
-      x(i+n+4) = (upper_bnd-lower_bnd)/2.0_dbl + (upper_bnd-lower_bnd)*asin(y(i))/pi
+      x(i+n+4) = (upper_bnd+lower_bnd)/2.0_dbl + (upper_bnd-lower_bnd)*asin(y(i))/pi
     END DO 
     DO i=5,n+4
       x(i) = upper_bnd + lower_bnd - x(2*n+10-i)

@@ -54,9 +54,11 @@ PROGRAM MAIN
   ! Try to grab theta, the implicit factor
   !success = get_arg("theta",theta,exists=exists)
   
-  SHAPE = "1999"
+  SHAPE = "1997"
   amp = 0.8
-  GRID = "uniform"
+  ! options: uniform, non_uniform_square, non_uniform_sin
+  GRID = "non_uniform_sin"
+  dt = 2e-9
   n = 400
   theta = 0.5_dbl
   PRINT*, theta
@@ -79,7 +81,7 @@ PROGRAM MAIN
 
   !!!!!!!!!!!!!!!!!!!! for uniform grid !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   IF (GRID == "uniform") THEN
-    dt = 1e-9
+    !dt = 1e-9
     ALLOCATE(x(2*n+9))
     !!!! create non-uniform grid
     CALL grid_uni(x,dx,lower_bnd,upper_bnd)
@@ -148,7 +150,7 @@ PROGRAM MAIN
 
 !!!!!!!!!!!!!!!!!!!!!!!!! for non_uniform_square gird !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   IF (GRID == "non_uniform_square") THEN
-    dt = 2e-9
+    !dt = 2e-9
     ALLOCATE(x(2*n+9))
     CALL grid_square(n,x,lower_bnd,upper_bnd)
 
@@ -219,7 +221,7 @@ PROGRAM MAIN
 
   !!!!!!!!!!!!!!!!!!!!!!! For non_uniform_sin grid !!!!!!!!!!!!!!!!!!!!!!!!!!
   IF (GRID == "non_uniform_sin") THEN
-    dt = 2e-8
+    !dt = 2e-9
     ALLOCATE(x(2*n+9))
     CALL grid_sin(n,x,lower_bnd,upper_bnd)
 
