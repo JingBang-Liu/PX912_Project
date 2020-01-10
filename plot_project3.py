@@ -3,6 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LogNorm
 
+
+# set text style
+#rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+#rc('text',usetext=True)
+
 dat = NC.Dataset("project3.nc","r",format="NETCDF4")
 
 #print(dat.__dict__)
@@ -18,13 +23,14 @@ time = dat.variables['time']
 
 fig, (ax0,ax1) = plt.subplots(1,2)
 
-c = ax0.loglog(time[-1]-time,h_min)
-c = ax0.loglog(time[-1]-time,time[-1]-time)
-c = ax0.loglog(time[-1]-time,(time[-1]-time)**(1/5))
+c = ax0.loglog(time[-1]-time,h_min,label=r'$h_{min}$')
+c = ax0.loglog(time[-1]-time,time[-1]-time,label='1')
+c = ax0.loglog(time[-1]-time,(time[-1]-time)**(1/5),label='$\\frac{1}{5}$')
 ax0.set_title('Logarithmic plot of time and h_min')
-ax0.set_xlabel('time')
-ax0.set_ylabel('h_min')
-ax0.legend(['h_min','1','1/5'])
+ax0.set_xlabel('log(t_r-t)')
+ax0.set_ylabel('log(h_min)')
+#ax0.legend(['h_min','1','1/5'])
+ax0.legend()
 c = ax1.plot(x,h0,'r')
 c = ax1.plot(x,h,'b')
 ax1.set_title('shape of film')
