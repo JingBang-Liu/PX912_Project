@@ -35,6 +35,8 @@ PROGRAM MAIN
   REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: a, b
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: h_min, h_min_temp
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: time, time_temp
+  REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: h_his, h_his_temp
+  INTEGER :: time_gap, his_count
   TYPE(run_data) :: r_d
   INTEGER :: i, j, k
 
@@ -57,10 +59,11 @@ PROGRAM MAIN
   SHAPE = "1997"
   amp = 0.8
   ! options: uniform, non_uniform_square, non_uniform_sin
-  GRID = "non_uniform_sin"
-  dt = 2e-9
-  n = 400
+  GRID = "uniform"
+  dt = 2e-7
+  n = 100
   theta = 0.5_dbl
+  time_gap = 100
   PRINT*, theta
   PRINT*, dt
 
@@ -110,10 +113,13 @@ PROGRAM MAIN
     !h(1,1) = h(1,2*n+1); h(1,2) = h(1,2*n+2); h(1,3) = h(1,2*n+3); h(1,4) = h(1,2*n+4)
     !h(1,2*n+6) = h(1,6); h(1,2*n+7) = h(1,7); h(1,2*n+8) = h(1,8); h(1,2*n+9) = h(1,9)
     k = 1
+    his_count = 1
     ALLOCATE(h_min(1))
     ALLOCATE(time(1))
+    ALLOCATE(h_his(1,2*n+9))
     h_min(1) = minval(h(1,:))
     time(1) = 0.0_dbl
+    h_his(1,:) = h(1,:)
 
     DO WHILE ((k<m).and.(test==0))
       k = k + 1
@@ -131,6 +137,16 @@ PROGRAM MAIN
         PRINT*, minval(h(2,:))
       END IF
       h(1,:) = h(2,:)
+      IF (mod(k,time_gap)==0) THEN
+        his_count = his_count + 1
+        ALLOCATE(h_his_temp(his_count-1,2*n+9))
+        h_his_temp = h_his
+        DEALLOCATE(h_his)
+        ALLOCATE(h_his(his_count,2*n+9))
+        h_his(1:his_count-1,:) = h_his_temp
+        DEALLOCATE(h_his_temp)
+        h_his(his_count,:) = h(1,:)
+      END IF
       ALLOCATE(h_min_temp(k-1))
       ALLOCATE(time_temp(k-1))
       h_min_temp = h_min
@@ -145,7 +161,7 @@ PROGRAM MAIN
       DEALLOCATE(time_temp)
       h_min(k) = minval(h(1,:))
       time(k) = dt*(k-1)
-      END DO
+    END DO
   END IF
 
 !!!!!!!!!!!!!!!!!!!!!!!!! for non_uniform_square gird !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -179,11 +195,14 @@ PROGRAM MAIN
     b = coef_1(x)
 
     k = 1
+    his_count = 1
 
     ALLOCATE(h_min(1))
     ALLOCATE(time(1))
+    ALLOCATE(h_his(1,2*n+9))
     h_min(1) = minval(h(1,:))
     time(1) = 0.0_dbl
+    h_his(1,:) = h(1,:)
 
     DO WHILE ((k<m).and.(test==0))
       k = k + 1
@@ -202,6 +221,16 @@ PROGRAM MAIN
         PRINT*, minval(h(2,:))
       END IF
       h(1,:) = h(2,:)
+      IF (mod(k,time_gap)==0) THEN
+        his_count = his_count + 1
+        ALLOCATE(h_his_temp(his_count-1,2*n+9))
+        h_his_temp = h_his
+        DEALLOCATE(h_his)
+        ALLOCATE(h_his(his_count,2*n+9))
+        h_his(1:his_count-1,:) = h_his_temp
+        DEALLOCATE(h_his_temp)
+        h_his(his_count,:) = h(1,:)
+      END IF
       ALLOCATE(h_min_temp(k-1))
       ALLOCATE(time_temp(k-1))
       h_min_temp = h_min
@@ -250,11 +279,14 @@ PROGRAM MAIN
     b = coef_1(x)
 
     k = 1
+    his_count = 1
 
     ALLOCATE(h_min(1))
     ALLOCATE(time(1))
+    ALLOCATE(h_his(1,2*n+9))
     h_min(1) = minval(h(1,:))
     time(1) = 0.0_dbl
+    h_his(1,:) = h(1,:)
 
     DO WHILE ((k<m).and.(test==0))
       k = k + 1
@@ -273,6 +305,16 @@ PROGRAM MAIN
         PRINT*, minval(h(2,:))
       END IF
       h(1,:) = h(2,:)
+      IF (mod(k,time_gap)==0) THEN
+        his_count = his_count + 1
+        ALLOCATE(h_his_temp(his_count-1,2*n+9))
+        h_his_temp = h_his
+        DEALLOCATE(h_his)
+        ALLOCATE(h_his(his_count,2*n+9))
+        h_his(1:his_count-1,:) = h_his_temp
+        DEALLOCATE(h_his_temp)
+        h_his(his_count,:) = h(1,:)
+      END IF
       ALLOCATE(h_min_temp(k-1))
       ALLOCATE(time_temp(k-1))
       h_min_temp = h_min
@@ -290,7 +332,7 @@ PROGRAM MAIN
     END DO
   END IF
 
-  CALL write_project3(x,h0,h(2,:),h_min,time,r_d,filename,ierr)
+  CALL write_project3(x,h0,h(2,:),h_min,time,h_his,r_d,filename,ierr)
 
 
 

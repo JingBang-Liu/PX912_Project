@@ -20,26 +20,31 @@ MODULE netcdf_write
 
   CONTAINS
 
-  SUBROUTINE write_project3(x,h0,h,h_min,time,r_d,filename,ierr)
+  SUBROUTINE write_project3(x,h0,h,h_min,time,h_his,r_d,filename,ierr)
     !!!! Define input variables
     REAL(KIND=dbl), DIMENSION(:), INTENT(IN) :: x, h0, h, h_min, time
+    REAL(KIND=dbl), DIMENSION(:,:), INTENT(IN) :: h_his
     CHARACTER(LEN=*), INTENT(IN) :: filename
     TYPE(run_data) :: r_d
     INTEGER :: ierr
     !!!! Define dimensions
     INTEGER, PARAMETER :: ndims = 1
+    INTEGER, PARAMETER :: ndims2 = 2
     !!!! Define dimensions for output variables
     CHARACTER(LEN=1), DIMENSION(ndims) :: dims_x=(/"x"/)
     CHARACTER(LEN=2), DIMENSION(ndims) :: dims_h0=(/"h0"/)
     CHARACTER(LEN=1), DIMENSION(ndims) :: dims_h=(/"h"/)
     CHARACTER(LEN=5), DIMENSION(ndims) :: dims_h_min=(/"h_min"/)
     CHARACTER(LEN=1), DIMENSION(ndims) :: dims_time=(/"t"/)
+    CHARACTER(LEN=6), DIMENSION(ndims2) :: dims_h_his=(/"t_his","h_his"/)
     !!!! Define the size ids for output variables
     INTEGER, DIMENSION(ndims) :: sizes_x, sizes_h0, sizes_h, sizes_h_min, sizes_time
+    INTEGER, DIMENSION(ndims2) :: sizes_h_his
     !!!! Define the dimension of ids for output variables
     INTEGER, DIMENSION(ndims) :: dim_ids_x, dim_ids_h0, dim_ids_h, dim_ids_h_min, dim_ids_time
+    INTEGER, DIMENSION(ndims2) :: dim_ids_h_his
     !!!! Define variable ids for output variables
-    INTEGER :: var_id_x, var_id_h0, var_id_h, var_id_h_min, var_id_time
+    INTEGER :: var_id_x, var_id_h0, var_id_h, var_id_h_min, var_id_time, var_id_h_his
     !!!! Define file id
     INTEGER :: file_id
     INTEGER :: i
@@ -50,6 +55,7 @@ MODULE netcdf_write
     sizes_h = size(h)
     sizes_h_min = size(h_min)
     sizes_time = size(time)
+    sizes_h_his = shape(h_his)
 
     !!!! Create file
     ierr = nf90_create(filename,NF90_CLOBBER,file_id)
@@ -122,6 +128,14 @@ MODULE netcdf_write
       END IF
     END DO
 
+    DO i=1,ndims2
+      ierr = nf90_def_dim(file_id,dims_h_his(i),sizes_h_his(i),dim_ids_h_his(i))
+      IF (ierr /= nf90_noerr) THEN
+        PRINT*, TRIM(nf90_strerror(ierr))
+        RETURN
+      END IF
+    END DO
+
     !!!! Define var ids
     ierr = nf90_def_var(file_id, "x", NF90_DOUBLE, dim_ids_x, var_id_x)
     IF (ierr /=nf90_noerr) THEN
@@ -148,6 +162,12 @@ MODULE netcdf_write
     END IF
 
     ierr = nf90_def_var(file_id, "time", NF90_DOUBLE, dim_ids_time, var_id_time)
+    IF (ierr /=nf90_noerr) THEN
+      PRINT*, TRIM(nf90_strerror(ierr))
+      RETURN
+    END IF
+    
+    ierr = nf90_def_var(file_id, "h_his", NF90_DOUBLE, dim_ids_h_his, var_id_h_his)
     IF (ierr /=nf90_noerr) THEN
       PRINT*, TRIM(nf90_strerror(ierr))
       RETURN
@@ -192,6 +212,13 @@ MODULE netcdf_write
     ierr = nf90_put_var(file_id, var_id_time, time) 
     IF (ierr /=nf90_noerr) THEN
       PRINT*, TRIM(nf90_strerror(ierr)), "time"
+      RETURN
+    END IF
+
+    !!!! Write h_his into file
+    ierr = nf90_put_var(file_id, var_id_h_his, h_his)
+    IF (ierr /=nf90_noerr) THEN
+      PRINT*, TRIM(nf90_strerror(ierr)), "h_his"
       RETURN
     END IF
 
