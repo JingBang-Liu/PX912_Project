@@ -19,8 +19,8 @@ PROGRAM MAIN
   REAL(KIND=dbl), PARAMETER :: w = sqrt(0.5_dbl)
   INTEGER :: test = 0 
   INTEGER :: n ! input from command line
-  INTEGER(KIND=INT64) :: m = 1e10
-  REAL(KIND=dbl) :: dt ! input from command line
+  INTEGER(KIND=INT64) :: m = 2*1e4
+  REAL(KIND=dbl) :: dt, dt_init ! input from command line
   !REAL(KIND=dbl), PARAMETER :: lower_bnd = 0.0_dbl, upper_bnd = 2.0_dbl*pi
   !REAL(KIND=dbl), PARAMETER :: lower_bnd = -pi/W, upper_bnd = pi/W
   REAL(KIND=dbl) :: lower_bnd, upper_bnd
@@ -59,11 +59,11 @@ PROGRAM MAIN
   SHAPE = "1997"
   amp = 0.2
   ! options: uniform, non_uniform_square, non_uniform_sin
-  GRID = "uniform"
-  dt = 1e-6
+  GRID = "non_uniform_square"
+  dt_init = 1e-5
   n = 100
   theta = 0.5_dbl
-  time_gap = 100
+  time_gap = 400
   PRINT*, theta
   PRINT*, dt
 
@@ -122,6 +122,8 @@ PROGRAM MAIN
     h_his(1,:) = h(1,:)
 
     DO WHILE ((k<m).and.(test==0))
+      !dt = dx**4*(minval(h(1,:))**4)
+      dt = dt_init*minval(h(1,:))
       k = k + 1
       h(2,:) = uniform_2nd_order_newton(h(1,:),dx,Ca,A_bar,dt,theta,tol_newton)
       DO i=5,2*n+5
@@ -160,7 +162,7 @@ PROGRAM MAIN
       DEALLOCATE(h_min_temp)
       DEALLOCATE(time_temp)
       h_min(k) = minval(h(1,:))
-      time(k) = dt*(k-1)
+      time(k) = dt + time(k-1)
     END DO
   END IF
 
@@ -169,6 +171,8 @@ PROGRAM MAIN
     !dt = 2e-9
     ALLOCATE(x(2*n+9))
     CALL grid_square(n,x,lower_bnd,upper_bnd)
+
+    dx = abs(x(n)-x(n+1))
 
     ALLOCATE(h(2,2*n+9))
     ALLOCATE(h0(2*n+9))
@@ -205,6 +209,7 @@ PROGRAM MAIN
     h_his(1,:) = h(1,:)
 
     DO WHILE ((k<m).and.(test==0))
+      dt = dt_init*minval(h(1,:))
       k = k + 1
       h(2,:) = non_uniform_2nd_order_newton(h(1,:),a,b,Ca,A_bar,dt,theta,tol_newton)
       DO i=5,2*n+5
@@ -244,7 +249,7 @@ PROGRAM MAIN
       DEALLOCATE(h_min_temp)
       DEALLOCATE(time_temp)
       h_min(k) = minval(h(1,:))
-      time(k) = dt*(k-1)
+      time(k) = dt + time(k-1)
     END DO
   END IF
 
@@ -328,7 +333,7 @@ PROGRAM MAIN
       DEALLOCATE(h_min_temp)
       DEALLOCATE(time_temp)
       h_min(k) = minval(h(1,:))
-      time(k) = dt*(k-1)
+      time(k) = dt + time(k-1)
     END DO
   END IF
 
