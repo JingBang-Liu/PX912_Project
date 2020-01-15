@@ -210,7 +210,7 @@ MODULE non_uniform_newton
     REAL(KIND=dbl) :: e, e_temp
     INTEGER, DIMENSION(:), ALLOCATABLE :: ipiv
     REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: work(:)
-    INTEGER :: info, lwork, i, j, n
+    INTEGER :: info, lwork, i, j, n, k
     REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: Jac, J_inv, LU
 
     n = size(h_1)
@@ -218,8 +218,11 @@ MODULE non_uniform_newton
     h_2 = explicit_euler_non(h_1,a,b,Ca,A_bar,dt)
     e = 1.0_dbl
     e_temp = 1.0_dbl
+    k = 0
     DO WHILE (e>tol)
-      !e = 1.0_dbl
+      !k = k + 1
+      !PRINT*, k
+      e = 1.0_dbl
       ALLOCATE(Jac(n,n))
       Jac = Jacobian_non(h_2,a,b,Ca,A_bar,dt,theta) 
       DO i=1,n

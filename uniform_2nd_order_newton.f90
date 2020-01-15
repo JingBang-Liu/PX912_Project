@@ -107,13 +107,16 @@ MODULE uniform_newton
   REAL(KIND=dbl) :: e
   INTEGER, DIMENSION(:), ALLOCATABLE :: ipiv
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: work(:)
-  INTEGER :: info, lwork, n
+  INTEGER :: info, lwork, n, k
 
   n = size(h_1)
   ALLOCATE(h_2(n))
   h_2 = explicit_euler_uni(h_1,dx,Ca,A_bar,dt)
   e = 1.0_dbl
+  k = 0
   DO WHILE (e>tol)
+    !k = k + 1
+    !PRINT*, k
     e = 1.0_dbl
     ALLOCATE(Jac(n,n))
     Jac = Jacobian_uni(h_2,dx,Ca,A_bar,dt,theta)

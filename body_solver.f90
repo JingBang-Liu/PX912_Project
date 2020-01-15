@@ -57,10 +57,10 @@ PROGRAM MAIN
   !success = get_arg("theta",theta,exists=exists)
   
   SHAPE = "1997"
-  amp = 0.8
+  amp = 0.2
   ! options: uniform, non_uniform_square, non_uniform_sin
   GRID = "uniform"
-  dt = 2e-7
+  dt = 1e-6
   n = 100
   theta = 0.5_dbl
   time_gap = 100

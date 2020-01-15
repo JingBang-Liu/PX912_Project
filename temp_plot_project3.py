@@ -8,7 +8,7 @@ from matplotlib.colors import LogNorm
 #rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 #rc('text',usetext=True)
 
-dat = NC.Dataset("project3.nc","r",format="NETCDF4")
+dat = NC.Dataset("project3_temp.nc","r",format="NETCDF4")
 
 #print(dat.__dict__)
 #print(dat.variables['rho_charge_density'])
@@ -17,7 +17,6 @@ h0 = dat.variables['h0']
 h = dat.variables['h']
 h_min = dat.variables['h_min']
 time = dat.variables['time']
-
 h_his = dat.variables['h_his']
 
 T_temp = h_his.shape
@@ -38,7 +37,7 @@ ax0.set_ylabel('log(h_min)')
 #ax0.legend(['h_min','1','1/5'])
 ax0.legend()
 c = ax1.plot(x,h0,'r')
-c = ax1.plot(x,h_his[:,T-10],'b')
+c = ax1.plot(x,h_his[:,130],'b')
 ax1.set_title('shape of film')
 ax1.set_xlabel('x')
 ax1.set_ylabel('h')
