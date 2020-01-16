@@ -60,10 +60,11 @@ PROGRAM MAIN
   amp = 0.2
   ! options: uniform, non_uniform_square, non_uniform_sin
   GRID = "non_uniform_square"
-  dt_init = 1e-5
+  dt = 1e-7
+  dt_init = 1e-6
   n = 100
   theta = 0.5_dbl
-  time_gap = 400
+  time_gap = 100
   PRINT*, theta
   PRINT*, dt
 
@@ -122,9 +123,8 @@ PROGRAM MAIN
     h_his(1,:) = h(1,:)
 
     DO WHILE ((k<m).and.(test==0))
-      !dt = dx**4*(minval(h(1,:))**4)
-      dt = dt_init*minval(h(1,:))
       k = k + 1
+      dt = dt_init*minval(h(1,:))
       h(2,:) = uniform_2nd_order_newton(h(1,:),dx,Ca,A_bar,dt,theta,tol_newton)
       DO i=5,2*n+5
         IF ((h(2,i)<0)) THEN
@@ -162,7 +162,7 @@ PROGRAM MAIN
       DEALLOCATE(h_min_temp)
       DEALLOCATE(time_temp)
       h_min(k) = minval(h(1,:))
-      time(k) = dt + time(k-1)
+      time(k) = time(k-1) + dt
     END DO
   END IF
 
@@ -171,8 +171,6 @@ PROGRAM MAIN
     !dt = 2e-9
     ALLOCATE(x(2*n+9))
     CALL grid_square(n,x,lower_bnd,upper_bnd)
-
-    dx = abs(x(n)-x(n+1))
 
     ALLOCATE(h(2,2*n+9))
     ALLOCATE(h0(2*n+9))
@@ -209,8 +207,8 @@ PROGRAM MAIN
     h_his(1,:) = h(1,:)
 
     DO WHILE ((k<m).and.(test==0))
-      dt = dt_init*minval(h(1,:))
       k = k + 1
+      dt = dt_init*minval(h(1,:))
       h(2,:) = non_uniform_2nd_order_newton(h(1,:),a,b,Ca,A_bar,dt,theta,tol_newton)
       DO i=5,2*n+5
         IF ((h(2,i)<0)) THEN
@@ -295,6 +293,7 @@ PROGRAM MAIN
 
     DO WHILE ((k<m).and.(test==0))
       k = k + 1
+      dt = dt_init*minval(h(1,:))
       h(2,:) = non_uniform_2nd_order_newton(h(1,:),a,b,Ca,A_bar,dt,theta,tol_newton)
       DO i=5,2*n+5
         IF ((h(2,i)<0)) THEN
