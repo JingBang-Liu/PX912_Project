@@ -41,10 +41,18 @@ MODULE non_uniform_newton
 
   DO i=4,n-3
     x_temp = 0.0_dbl
-    DO j=1,3
-      x_temp(j) = x(i-4+j)
-      x_temp(7-j) = x(i+4-j)
-    END DO
+    !! From center, left then right
+    x_temp(1) = x(i-1)
+    x_temp(2) = x(i+1)
+    x_temp(3) = x(i-2)
+    x_temp(4) = x(i+2)
+    x_temp(5) = x(i-3)
+    x_temp(6) = x(i+3)
+    !! From left to right
+    !DO j=1,3
+    !  x_temp(j) = x(i-4+j)
+    !  x_temp(7-j) = x(i+4-j)
+    !END DO
     c_temp = FB_coef(3,6,x(i),x_temp)
     DO j=1,6
       c(i,j) = c_temp(4,6,j)
@@ -65,12 +73,17 @@ MODULE non_uniform_newton
   x_temp = 0.0_dbl
   c = 0.0_dbl
   c_temp = 0.0_dbl
-
+  
   DO i=4,n-3
     x_temp = 0.0_dbl
-    DO j=1,3
-      x_temp(j) = x(i-2+j)
-    END DO
+    !! From center, left, right
+    x_temp(1) = x(i)
+    x_temp(2) = x(i-1)
+    x_temp(3) = x(i+1)
+    !! From left to right
+    !DO j=1,3
+    !  x_temp(j) = x(i-2+j)
+    !END DO
     c_temp = FB_coef(1,3,x(i),x_temp)
     DO j=1,3
       c(i,j) = c_temp(2,3,j)

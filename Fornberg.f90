@@ -26,12 +26,14 @@ MODULE Fornberg_coeff
     DO j=0,i-1 !! this is for nu
       c3 = x(i+1) - x(j+1)
       c2 = c2*c3
+      c(1,i+1,j+1) = ((x(i+1)-x0)*c(1,i,j+1))/c3
       DO k=1, min(i,m) !! this is for m
         c(k+1,i+1,j+1) = ((x(i+1) - x0)*c(k+1,i,j+1) - k*c(k,i,j+1))/c3
       END DO
     END DO
+    c(1,i+1,i+1) = c1*(-(x(i)-x0)*c(1,i,i))/c2
     DO k=1, min(i,m)
-      c(k+1,i+1,i+1) = c1*(k*c(k,i,i) - (x(i) - x0)*c(k+1,i,i))
+      c(k+1,i+1,i+1) = c1*(k*c(k,i,i) - (x(i) - x0)*c(k+1,i,i))/c2
     END DO
     c1 = c2
   END DO

@@ -27,12 +27,12 @@ PROGRAM MAIN
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: x ! grid depend on n
   REAL(KIND=dbl) :: dx ! dx depend on x
   REAL(KIND=dbl) :: amp ! amplitude for pertubation
-  REAL(KIND=dbl), PARAMETER :: Ca = 1.0_dbl, A_bar = 1.0_dbl
+  REAL(KIND=dbl), PARAMETER :: Ca = 1.0_dbl, A_bar = 0.0_dbl
   REAL(KIND=dbl) :: theta ! input from command line
   REAL(KIND=dbl), PARAMETER :: tol_newton = 1e-2_dbl
   REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: h
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: h0
-  REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: a, b
+  REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: a, b, a_temp, b_temp
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: h_min, h_min_temp
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: time, time_temp
   REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: h_his, h_his_temp
@@ -56,12 +56,12 @@ PROGRAM MAIN
   ! Try to grab theta, the implicit factor
   !success = get_arg("theta",theta,exists=exists)
   
-  SHAPE = "1997"
+  SHAPE = "1999"
   amp = 0.2
   ! options: uniform, non_uniform_square, non_uniform_sin
   GRID = "non_uniform_square"
   dt = 1e-7
-  dt_init = 1e-6
+  dt_init = 1e-11
   n = 100
   theta = 0.5_dbl
   time_gap = 100
@@ -171,6 +171,8 @@ PROGRAM MAIN
     !dt = 2e-9
     ALLOCATE(x(2*n+9))
     CALL grid_square(n,x,lower_bnd,upper_bnd)
+    !CALL grid_uni(x,dx,lower_bnd,upper_bnd)
+    !PRINT*, x
 
     ALLOCATE(h(2,2*n+9))
     ALLOCATE(h0(2*n+9))
@@ -193,8 +195,21 @@ PROGRAM MAIN
     
     ALLOCATE(a(2*n+9,6))
     ALLOCATE(b(2*n+9,3))
-    a = coef_3(x)
-    b = coef_1(x)
+    ALLOCATE(a_temp(2*n+9,6))
+    ALLOCATE(b_temp(2*n+9,3))
+    a_temp = coef_3(x)
+    b_temp = coef_1(x)
+    DO i=1,2*n+9
+      a(i,1) = a_temp(i,5)
+      a(i,2) = a_temp(i,3)
+      a(i,3) = a_temp(i,1)
+      a(i,4) = a_temp(i,2)
+      a(i,5) = a_temp(i,4)
+      a(i,6) = a_temp(i,6)
+      b(i,1) = b_temp(i,2)
+      b(i,2) = b_temp(i,1)
+      b(i,3) = b_temp(i,3)
+    END DO
 
     k = 1
     his_count = 1
