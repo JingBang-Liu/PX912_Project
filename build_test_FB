@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#List here all the f90 files to compile, separated by spaces
+#THERE MUST NOT be spaces around '=' in bash
+myprogramfiles="kinds.f90 Fornberg.f90 test_FB.f90"
+
+#Name of compiled file
+outfile="exec_test_FB"
+ 
+# Name of compiler
+fc=gfortran
+ 
+# Use nf-config to grab the compile and link flags. Backticks run command and grab output
+#fflags=`nf-config --fflags`
+#flibs=`nf-config --flibs`
+ 
+#Actual compile line. Other flags etc can be added
+#$fc -g -fcheck=all -Wall $fflags $myprogramfiles $flibs -o $outfile -llapack #-O3
+$fc -g -fcheck=all -Wall $myprogramfiles -o $outfile 
+
+./exec_test_FB
+

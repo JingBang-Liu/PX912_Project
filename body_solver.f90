@@ -19,7 +19,7 @@ PROGRAM MAIN
   REAL(KIND=dbl), PARAMETER :: w = sqrt(0.5_dbl)
   INTEGER :: test = 0 
   INTEGER :: n ! input from command line
-  INTEGER(KIND=INT64) :: m = 2*1e4
+  INTEGER(KIND=INT64) :: m = 2*1e3
   REAL(KIND=dbl) :: dt, dt_init ! input from command line
   !REAL(KIND=dbl), PARAMETER :: lower_bnd = 0.0_dbl, upper_bnd = 2.0_dbl*pi
   !REAL(KIND=dbl), PARAMETER :: lower_bnd = -pi/W, upper_bnd = pi/W
@@ -60,9 +60,9 @@ PROGRAM MAIN
   amp = 0.2
   ! options: uniform, non_uniform_square, non_uniform_sin
   GRID = "non_uniform_square"
-  dt = 1e-7
+  dt = 1e-13
   dt_init = 1e-11
-  n = 100
+  n = 200
   theta = 0.5_dbl
   time_gap = 100
   PRINT*, theta
@@ -170,8 +170,8 @@ PROGRAM MAIN
   IF (GRID == "non_uniform_square") THEN
     !dt = 2e-9
     ALLOCATE(x(2*n+9))
-    CALL grid_square(n,x,lower_bnd,upper_bnd)
-    !CALL grid_uni(x,dx,lower_bnd,upper_bnd)
+    !CALL grid_square(n,x,lower_bnd,upper_bnd)
+    CALL grid_uni(x,dx,lower_bnd,upper_bnd)
     !PRINT*, x
 
     ALLOCATE(h(2,2*n+9))
@@ -195,21 +195,25 @@ PROGRAM MAIN
     
     ALLOCATE(a(2*n+9,6))
     ALLOCATE(b(2*n+9,3))
-    ALLOCATE(a_temp(2*n+9,6))
-    ALLOCATE(b_temp(2*n+9,3))
+    !ALLOCATE(a_temp(2*n+9,6))
+    !ALLOCATE(b_temp(2*n+9,3))
     a_temp = coef_3(x)
     b_temp = coef_1(x)
-    DO i=1,2*n+9
-      a(i,1) = a_temp(i,5)
-      a(i,2) = a_temp(i,3)
-      a(i,3) = a_temp(i,1)
-      a(i,4) = a_temp(i,2)
-      a(i,5) = a_temp(i,4)
-      a(i,6) = a_temp(i,6)
-      b(i,1) = b_temp(i,2)
-      b(i,2) = b_temp(i,1)
-      b(i,3) = b_temp(i,3)
-    END DO
+    a = a_temp
+    b = b_temp
+    !DO i=1,2*n+9
+    !  a(i,1) = a_temp(i,5)
+    !  a(i,2) = a_temp(i,3)
+    !  a(i,3) = a_temp(i,1)
+    !  a(i,4) = a_temp(i,2)
+    !  a(i,5) = a_temp(i,4)
+    !  a(i,6) = a_temp(i,6)
+    !  b(i,1) = b_temp(i,2)
+    !  b(i,2) = b_temp(i,1)
+    !  b(i,3) = b_temp(i,3)
+    !END DO
+    PRINT*, 'coef a is ', a(10,:)*(abs(x(10)-x(9))**3)
+    PRINT*, 'coef b is ', b(10,:)*(abs(x(10)-x(9)))
 
     k = 1
     his_count = 1
@@ -223,7 +227,7 @@ PROGRAM MAIN
 
     DO WHILE ((k<m).and.(test==0))
       k = k + 1
-      dt = dt_init*minval(h(1,:))
+      !dt = dt_init*minval(h(1,:))
       h(2,:) = non_uniform_2nd_order_newton(h(1,:),a,b,Ca,A_bar,dt,theta,tol_newton)
       DO i=5,2*n+5
         IF ((h(2,i)<0)) THEN
