@@ -19,7 +19,7 @@ PROGRAM MAIN
   REAL(KIND=dbl), PARAMETER :: w = sqrt(0.5_dbl)
   INTEGER :: test = 0 
   INTEGER :: n ! input from command line
-  INTEGER(KIND=INT64) :: m = 2*1e3
+  INTEGER(KIND=INT64) :: m = 2*1e5
   REAL(KIND=dbl) :: dt, dt_init ! input from command line
   !REAL(KIND=dbl), PARAMETER :: lower_bnd = 0.0_dbl, upper_bnd = 2.0_dbl*pi
   !REAL(KIND=dbl), PARAMETER :: lower_bnd = -pi/W, upper_bnd = pi/W
@@ -60,9 +60,9 @@ PROGRAM MAIN
   amp = 0.2
   ! options: uniform, non_uniform_square, non_uniform_sin
   GRID = "non_uniform_square"
-  dt = 1e-13
+  dt = 1e-11
   dt_init = 1e-11
-  n = 200
+  n = 100
   theta = 0.5_dbl
   time_gap = 100
   PRINT*, theta
@@ -170,8 +170,8 @@ PROGRAM MAIN
   IF (GRID == "non_uniform_square") THEN
     !dt = 2e-9
     ALLOCATE(x(2*n+9))
-    !CALL grid_square(n,x,lower_bnd,upper_bnd)
-    CALL grid_uni(x,dx,lower_bnd,upper_bnd)
+    CALL grid_square(n,x,lower_bnd,upper_bnd)
+    !CALL grid_uni(x,dx,lower_bnd,upper_bnd)
     !PRINT*, x
 
     ALLOCATE(h(2,2*n+9))
