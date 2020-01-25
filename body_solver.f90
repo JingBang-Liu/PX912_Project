@@ -27,7 +27,7 @@ PROGRAM MAIN
   REAL(KIND=dbl), DIMENSION(:), ALLOCATABLE :: x ! grid depend on n
   REAL(KIND=dbl) :: dx ! dx depend on x
   REAL(KIND=dbl) :: amp ! amplitude for pertubation
-  REAL(KIND=dbl), PARAMETER :: Ca = 1.0_dbl, A_bar = 0.0_dbl
+  REAL(KIND=dbl), PARAMETER :: Ca = 1.0_dbl, A_bar = 1.0_dbl
   REAL(KIND=dbl) :: theta ! input from command line
   REAL(KIND=dbl), PARAMETER :: tol_newton = 1e-2_dbl
   REAL(KIND=dbl), DIMENSION(:,:), ALLOCATABLE :: h
@@ -56,13 +56,13 @@ PROGRAM MAIN
   ! Try to grab theta, the implicit factor
   !success = get_arg("theta",theta,exists=exists)
   
-  SHAPE = "1999"
-  amp = 0.2
+  SHAPE = "1997"
+  amp = 0.5
   ! options: uniform, non_uniform_square, non_uniform_sin
-  GRID = "non_uniform_square"
+  GRID = "uniform"
   dt = 1e-11
-  dt_init = 1e-11
-  n = 100
+  dt_init = 1e-6
+  n = 50
   theta = 0.5_dbl
   time_gap = 100
   PRINT*, theta
@@ -134,7 +134,7 @@ PROGRAM MAIN
           test = 1
         END IF
       END DO
-      IF (mod(k,10)==0) THEN
+      IF (mod(k,100)==0) THEN
         PRINT*, k
         PRINT*, minval(h(2,:))
       END IF
