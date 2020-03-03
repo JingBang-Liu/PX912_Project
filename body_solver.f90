@@ -60,9 +60,9 @@ PROGRAM MAIN
   amp = 0.5
   ! options: uniform, non_uniform_square, non_uniform_sin
   GRID = "uniform"
-  dt = 1e-11
+  dt = 1e-6
   dt_init = 1e-6
-  n = 50
+  n = 100
   theta = 0.5_dbl
   time_gap = 100
   PRINT*, theta
@@ -124,7 +124,7 @@ PROGRAM MAIN
 
     DO WHILE ((k<m).and.(test==0))
       k = k + 1
-      dt = dt_init*minval(h(1,:))
+      !dt = dt_init*minval(h(1,:))
       h(2,:) = uniform_2nd_order_newton(h(1,:),dx,Ca,A_bar,dt,theta,tol_newton)
       DO i=5,2*n+5
         IF ((h(2,i)<0)) THEN
